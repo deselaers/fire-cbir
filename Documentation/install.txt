@@ -1,0 +1,129 @@
+The installation consists of 4 phases:
+
+ - compile fire
+ - install an apache server
+ - setup the FIRE webinterface in the apache server
+ - index a database to use FIRE
+
+This is a basic setup. Advanced use might require some tweaking on your side.
+
+==== INSTALL FIRE ====
+How to install fire:
+
+1. download the FIRE sources from http://thomas.deselaers.de/FIRE
+   [you have probably done that, since you are reading this file]
+   and unpack it.
+
+2. if you plan to use fire on several architectures set the ARCH
+   variable to the one that you are currently using, otherwise, just leave
+   it as it is.
+
+3. You need several libraries installed. Most important ist ImageMagick
+   with C++ bindings. I am using  version 6.2.4.
+
+   All other libraries used by FIRE are disabled by default. You might
+   want to try to enable some of them, but I suggest first compiling and
+   testing the base version of FIRE.
+
+4. Run "make" in the fire main directory.
+   this will take a while and will usually generate a lot of warnings due
+   to disabled libraries. Normally there should be no errors.
+
+5. After you have done so, you can check that a whole bunch of binaries was
+   created in <FIRE DIR>/bin/$ARCH 
+
+6. If there are 52 binaries, everything was built, otherwise, something might be missing.
+   For the remainder of this description, you will need only three of these binaries:
+     - fire
+     - extractcolorhistogram
+     - extracttamuratexturefeature
+
+
+
+==== INSTALL APACHE ====
+Now you need to install an apache for the webinterface.
+* You can also use a webserver that is already installed with your system,
+  but then you need to change the following steps according to your
+  installation. 
+
+1. download the apache source
+   I used http://apache.linux-mirror.org/httpd/httpd-2.2.8.tar.gz
+2. unpack it
+   tar -xzf httpd-2.2.8.tar.gz
+3. compile it 
+   Here are the steps I did
+ 
+   - cd http-2.2.8
+   - ./configure --prefix=$HOME/apache   // again, you are free to change this.
+   - make 
+   - make install
+
+4. you have now successfully installed apache. Since I am not running apache as root, I change the
+   apache config as follows:
+     -  edit $HOME/apache/conf/httpd.conf
+       - change the line 
+          Listen 80 
+         to
+          Listen 12345
+         to make the server run on a non-reserved port
+       - change the email address in the ServerAdmin-line to my email address
+5. start $HOME/apache/bin/httpd
+6. check that I have a "It works"-message when browing to http://localhost:12345
+7. stop apache again by $HOME/apache/bin/apachectk stop
+
+==== INSTALL THE WEBINTERFACE TO FIRE ====
+The following procedure puts some images into weird places... but it 
+is the easiest way to make this work. So, you might want to change some of the settings in 
+config.py at a later time and remove some of the images.
+
+1. copy from the WebInterface folder in the FIRE source into the cgi-bin directory of the apache installation
+  cp <FIRE DIR>/WebInterface/*.py $HOME/apache/cgi-bin
+2. make the cgi file executable:
+  chmod 755 ~/apache/cgi-bin//*.py
+3. cp <FIRE DIR>/Python/firesocket.py $HOME/apache/cgi-bin/  
+4. cp <FIRE DIR>/WebInterface/fire-template.html $HOME/apache/cgi-bin/
+5. mkdir $HOME/apache/htdocs/images
+6. mkdir $HOME/apache/cgi-bin/images
+7. cp <FIRE DIR>WebInterface/*.png $HOME/apache/htdocs/images
+8. cp <FIRE DIR>WebInterface/*.png $HOME/apache/cgi-bin/images
+
+
+==== INDEX A SMALL DATABASE FOR FIRE ====
+1. have a directory with some (~100) reasonably sized (in the order of 500x500 pixel) images.
+   In the following, I will use the SHORTCUT $IMGDIR  for this
+2. extract color histograms for the images:
+  $FIREDIR/bin/extractcolorhistogram --color --images $IMGDIR/*.jpg
+3. extract tamura texture histograms for the images:
+  $FIREDIR/bin/extracttamuratexturefeature --saveHistogram tamura.histo.gz --images $IMGDIR/*.jpg
+4. create a filelist: 
+  cd $IMGDIR
+  echo "FIRE_filelist" > list
+  echo "path $IMGDIR" >> list
+  echo "suffix color.histo.gz" >> list
+  echo "suffix tamura.histo.gz" >> list
+  ls *.jpg | awk '{print "file",$1}' >> list
+5. the create list then looks like this:
+
+FIRE_filelist
+path /u/deselaers/tmp/img/
+suffix color.histo.gz
+suffix tamura.histo.gz
+file 100.jpg
+file 101.jpg
+file 102.jpg
+....
+
+
+==== STARTING FIRE ====
+start fire.
+  $FIREDIR/bin/fire -f $IMGDIR/list -D -r 10
+
+use the webinterface: 
+  http://localhost:12345/cgi-bin/fire.py
+
+
+
+
+
+
+
