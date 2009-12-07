@@ -3,6 +3,8 @@
 #include "tamurafeature.hpp"
 #include "imagelib.hpp"
 #include <cmath>
+#include <limits>
+
 using namespace std;
 
 ImageFeature calculate(const ImageFeature &img) {

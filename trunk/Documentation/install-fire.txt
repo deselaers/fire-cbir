@@ -1,7 +1,3 @@
-This document is outdated and describes an older version of FIRE.
-Nonetheless there might be some insights gained from reading.
-
-
 This document gives short instructions on how to get a basic
 installation of FIRE running.  It is split into two sections. 
 

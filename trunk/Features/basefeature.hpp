@@ -149,6 +149,10 @@ public:
    */
   virtual const unsigned long int calcBinarySize() const { return 0;}
 
+  BaseFeature & operator-=(const BaseFeature &){ 
+    ERR << "not implemented" << std::endl;
+    return (*this);
+  }
   
   // this is necessary for da factory
   template<class T>

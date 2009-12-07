@@ -107,3 +107,25 @@ const unsigned long int VectorFeature::calcBinarySize() const{
   bsize += (unsigned long int)data_.size() * (unsigned long int)sizeof(double);
   return bsize;
 }
+
+VectorFeature VectorFeature::operator-(const VectorFeature & v ) const
+  
+  {
+    if (v.size() != size()){
+      DBG(10)<<"THIS SHOULD NEVER HAPPEN!"<<std::endl;
+    }
+    VectorFeature result = VectorFeature((*this));
+    for (size_t i=0; i < size(); ++i)
+      result[i] = (*this)[i] - v[i];
+    return result;
+  }
+
+VectorFeature & VectorFeature::operator-=(const VectorFeature & v ) 
+  {
+    if (v.size() != size()){
+      DBG(10)<<"THIS SHOULD NEVER HAPPEN!"<<std::endl;
+    }
+    for (size_t i=0; i < size(); ++i)
+     (*this)[i] -= v[i];
+    return (*this);
+  }

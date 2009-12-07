@@ -25,7 +25,7 @@ Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 #include <map>
 #ifdef HAVE_FFT_LIBRARY
 extern "C" {
-  #include <fftw.h>
+  #include FFTW_INCLUDE
 }
 #endif
 #include <map>
@@ -568,8 +568,8 @@ ImageFeature getPatch(const ImageFeature &image, const uint xpos, const uint ypo
 
   ImageFeature result(dim,dim,image.zsize());
   
-  for(uint x=xpos-winsize;x<=xpos+winsize;++x) {
-    for(uint y=ypos-winsize;y<=ypos+winsize;++y) {
+  for(int x=(int)xpos-(int)winsize;x<=(int)xpos+(int)winsize;++x) {
+    for(int y=(int)ypos-(int)winsize;y<=(int)ypos+(int)winsize;++y) {
       for(uint z=0;z<image.zsize();++z) {
         if(inImage(image,x,y,z)) {
           result(x+winsize-xpos,y+winsize-ypos,z)=image(x,y,z);

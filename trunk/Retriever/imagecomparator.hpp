@@ -99,7 +99,7 @@ public:
   /// stop-method for all distance functions defined.
   void stop();
   
-  /// the counerpiece to start with distanceID.
+  /// the counterpiece to start with distanceID.
   void stop(uint distanceID);
   
   /// return the distance vector for the two images given.

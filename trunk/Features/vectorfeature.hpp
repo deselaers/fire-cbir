@@ -50,6 +50,9 @@ public:
   //virtual void load(const ::std::string &filename);
   //virtual void save(const ::std::string &filename);
 
+  VectorFeature operator-(const VectorFeature &v ) const;
+  VectorFeature & operator-=(const VectorFeature &v );
+
   ///inherited from BaseFeature
   virtual bool read(::std:: istream & is);
   ///inherited from BaseFeature

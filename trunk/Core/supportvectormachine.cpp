@@ -1,4 +1,5 @@
 #include "supportvectormachine.hpp"
+#include <limits>
 
 using namespace std;
 
@@ -47,11 +48,12 @@ SupportVectorMachine::~SupportVectorMachine() {
 }
 
 void SupportVectorMachine::train(const ::std::vector<DoubleVector>& trainVectors, const std::vector<int>& classes) {
+#ifdef HAVE_LIBSVM
   uint N=trainVectors.size();
   uint D=trainVectors[0].size();
   
   //DBG(10) << VAR(N) << " " <<VAR(D) << endl;
-#ifdef HAVE_LIBSVM  
+  
   x_space=new svm_node[N*(D+1)]; 
   prob.l=N;
   //prob.y=new double[N];// (double*)malloc(sizeof(double)*N);
@@ -82,6 +84,8 @@ void SupportVectorMachine::train(const ::std::vector<DoubleVector>& trainVectors
   DBG(10) << "converted, going to train" << endl;
   
   model=svm_train(&prob, &param);
+#else
+  ERR << "SVM cannot be trained. FIRE was compiled without support for it" << std::endl;
 #endif
 }
 

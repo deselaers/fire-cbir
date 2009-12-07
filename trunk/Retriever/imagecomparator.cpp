@@ -71,7 +71,7 @@ double ImageComparator::compare(const ImageContainer *queryImage, const ImageCon
   
   DBG(35) << "Comparing " << queryImage->basename() << " with " << databaseImage->basename() << " with regard to distance "<< distances_[distanceID]->name() <<endl;
   
-  double d, result;
+  double d,result;
 #ifdef HAVE_SQLITE3
   if(cacheActive_ and getFromCache(databaseImage->basename(), queryImage->basename(), distances_[distanceID]->name(),d)) {
     result=d;
@@ -231,7 +231,6 @@ bool ImageComparator::setInCache(const std::string& dbimg, const std::string &qi
 #endif
 
 }
-
 
 void ImageComparator::tuneDistances(const vector<ImageContainer*>& posQueries, const vector<ImageContainer*>& negQueries) {
   DBG(10) << "Tuning distances" << endl;  

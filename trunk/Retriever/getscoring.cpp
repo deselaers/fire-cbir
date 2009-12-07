@@ -19,6 +19,7 @@ along with FIRE; if not, write to the Free Software Foundation, Inc.,
 #include "basescoring.hpp"
 #include "maxentscoring.hpp"
 #include "linearscoring.hpp"
+#include "svmscoring.cpp"
 #include "getscoring.hpp"
 #include "maxentscoringsecondorder.hpp"
 #include "maxentscoringfirstandsecondorder.hpp"
@@ -43,6 +44,7 @@ BaseScoring * getScoring(const ::std::string& scoringname,const uint numberOfDis
   factory.registerClass("maxent",BaseScoring::create<MaxEntScoring>);
   factory.registerClass("maxent2nd",BaseScoring::create<MaxEntSecondOrderScoring>);
   factory.registerClass("maxent1st2nd",BaseScoring::create<MaxEntFirstAndSecondOrderScoring>);
+  factory.registerClass("svm",BaseScoring::create<SvmScoring>);
   
   string realscoringname=scoringname.substr(0,scoringname.find(":"));
   DBG(10) << VAR(realscoringname) << endl;
@@ -58,5 +60,5 @@ BaseScoring * getScoring(const ::std::string& scoringname,const uint numberOfDis
 }
 
 const ::std::string listScorings() {
-  return "linear maxent maxent2nd maxent1st2nd";
+  return "linear maxent maxent2nd maxent1st2nd svm";
 }

@@ -51,7 +51,8 @@ int main(int argc, char** argv) {
   string suffix=cl.follow("gabor.vec.gz","--suffix");
   int hMargin=cl.follow(32,"--hMargin");
   int vMargin=cl.follow(32,"--vMargin");
-  
+  bool saveImgs=cl.search("--saveImages");
+
   
   //get list of files to be processed
   vector<string> infiles;
@@ -101,6 +102,10 @@ int main(int argc, char** argv) {
     for(uint i=0;i<numPhases*numFrequencies;++i) {
       ImageFeature gaborImage=gabor.getImage(i);
       normalize(gaborImage);
+      if(saveImgs) {
+        ostringstream iss; iss << filename << "-" << i << ".png";
+        gaborImage.save(iss.str());
+      }
       meanandvariance(gaborImage, mean, variance);
       vecfeat[2*i]=mean; vecfeat[2*i+1]=sqrt(variance);
     }

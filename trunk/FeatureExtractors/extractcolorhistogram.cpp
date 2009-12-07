@@ -43,8 +43,8 @@ int main(int argc, char** argv) {
   if(cl.search(2,"--help","-h")) USAGE();
   if(!cl.search("--gray") && !cl.search("--color")) USAGE();
 
-  
-  
+
+
   string suffix;
   uint steps;
   if(cl.search("--color")) {
@@ -56,10 +56,10 @@ int main(int argc, char** argv) {
     color=false;
   }
   if(cl.size()<2) USAGE();
-  
+
   //get list of files to be processed
   vector<string> infiles;
-  
+
   if(cl.search("--images")) {
     string filename=cl.next(" ");;
     while(filename!=" ") {
@@ -84,7 +84,7 @@ int main(int argc, char** argv) {
     USAGE();
     exit(20);
   }
-  
+
 
   // processing the files
   ImageFeature im;
@@ -97,9 +97,9 @@ int main(int argc, char** argv) {
       result.min()=vector<double>(3,0.0);
       result.max()=vector<double>(3,1.0);
       result.initStepsize();
-      
+
       vector<double> tofeed(3);
-      
+
       for(uint x=0;x<im.xsize();++x) {
         for(uint y=0;y<im.ysize();++y) {
           tofeed[0]=im(x,y,0);
@@ -125,7 +125,7 @@ int main(int argc, char** argv) {
     }
     DBG(20) << "Finished with '" << filename << "'." << endl;
   }
-  
+
 
   DBG(10) << "cmdline was: "; printCmdline(argc,argv);
 }

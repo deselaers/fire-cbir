@@ -27,14 +27,14 @@
 class QueryCombiner {
 public:
   QueryCombiner() {}
-  QueryCombiner(Retriever& r) { }
+  QueryCombiner(Retriever&) { }
   virtual ~QueryCombiner(){}
   
   virtual void query(const std::vector<ImageContainer*> posQ, 
                      const std::vector<ImageContainer*> negQ, 
                      std::vector<ResultPair>& results)=0;
   
-  virtual void setParameters(const std::string& parameters) {}
+  virtual void setParameters(const std::string&) {}
 };
 
 /** this is the default query combiner that was used in FIRE between 2003 and early 2008.

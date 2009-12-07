@@ -82,6 +82,14 @@ class FileList:
                 self.suffices+=[tokens[1]]
         self.initMap()
 
+    def add(self, filename, class_=0, description=""):
+        if description == "":
+            assert(self.descriptions == False)
+            self.files.append([filename, class_, description])
+        else:
+            assert(self.descriptions == True)
+            self.files.append([filename, class_])
+
     def save(self, filename):
         if filename=="-":
             f=sys.stdout
@@ -101,7 +109,6 @@ class FileList:
 
         for fi in self.files:
             print >>f, "file %s" % " ".join(map(lambda x: str(x), fi))
-        
 
     def initMap(self):
         self.filename2idx={}
@@ -116,3 +123,19 @@ class FileList:
                 self.files[i]=(os.path.basename(self.files[i][0]),self.files[i][1])
             if len(self.files[i])==1:
                 self.files[i]=(os.path.basename(self.files[i][0]),)
+
+    def nameWithSuffix(self, item, suffix):
+        assert item < len(self.files)
+        assert suffix < len(self.suffices)
+        return self.files[item][0] + "." + self.suffices[suffix]
+
+    # generator for images with full path
+    def fullpaths(self):
+        for image in self.files:
+            yield os.path.join(self.rawpath, image[0])
+    
+    def get_full_path_for_item(self, item, suffixidx=-1):
+        name = os.path.join(self.rawpath, self.files[item][0])
+        if suffixidx > -1 and len(self.suffices) > 0:
+            name += "." + self.suffices[suffixidx]
+        return name

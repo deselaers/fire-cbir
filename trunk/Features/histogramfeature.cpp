@@ -335,7 +335,7 @@ bool HistogramFeature::read(istream &is) {
       min_.push_back(tmp);
     }
     if(dim_!=min_.size()) {
-      ERR << "min "<<min_.size() << "  and dim " << dim_ << " inconsistent." << endl;
+      ERR << "min "<<min_.size() << " and dim " << dim_ << " inconsistent." << endl;
     }
   } else {
     ERR << "Expected 'min', got '" << line <<"'." << endl;

@@ -26,13 +26,14 @@ Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 #include "localfeatures.hpp"
 #include "imagelib.hpp"
 #include "pca.hpp"
+#include "database.hpp"
 
 using namespace std;
 
 
 class SIFTExtractor {
 private:
-  
+
   string suffix;
   string pcasuffix;
   uint   levels;
@@ -50,9 +51,9 @@ private:
   bool loadPCA;
   string savepca_name;
   string loadpca_name;
-  
+
 public:
-  
+
   SIFTExtractor():
     suffix("sift"),
     pcasuffix("pca.sift"),
@@ -72,12 +73,12 @@ public:
     savepca_name(""),
     loadpca_name("")
   {}
-  
+
   void USAGE()
   {
-  
+
     cout << endl << "USAGE:" << endl << endl
-        << "extractsift [options] (--images filename1 [filename2 ... ]|--filelist <filelist>)" << endl << endl
+        << "extractsift [options] (--images filename1 [filename2 ... ]|--(fire)filelist <filelist>)" << endl << endl
         << "   Options:" << endl
         << "    -h, --help                   show this help" << endl
         << "    -s, --suffix <str>           suffix of output files (default: " << suffix << ")" << endl
@@ -100,15 +101,15 @@ public:
         << endl;
     exit(20);
   }
-  
+
   void run(int argc, char** argv) {
     GetPot cl(argc,argv);
-    
+
     //
     // command line parsing
     //
     if(cl.search(2,"--help","-h")) USAGE();
-    
+
     if(cl.size()<2) USAGE();
     suffix        = cl.follow(suffix.c_str(), 2, "-s", "--suffix");
     octaves       = cl.follow(octaves, 2,        "-O", "--octaves");
@@ -117,41 +118,30 @@ public:
     thresh        = cl.follow(thresh, 2,         "-t", "--threshold");
     edgeThreshold = cl.follow(edgeThreshold, 2,  "-e", "--edge-threshold");
     n_strongest   = cl.follow(n_strongest, 2,    "-n", "--n-strongest");
-    
+
     if(cl.search(2,"-c","--color")) {
       use_color = true;
     }
-    
+
     if(cl.search(2,"-g","--gray")){
       use_color = false;
     }
-    
+
     PCA *pca = NULL, *pca_r = NULL, *pca_g = NULL, *pca_b = NULL;
-    
+
     if(cl.search(2,"-P","--rgbpca")) {
       separate_rgb_pca = true;
     } else {
       separate_rgb_pca = false;
     }
-    
+
     if(cl.search(2,"-p","--pca")) {
-    	do_pca = true;
-    		
-      
+      do_pca = true;
+
       if( (use_color) && (!separate_rgb_pca) ) {
         pca_dim_in = 384;
       } else {
         pca_dim_in = 128;
-      }
-      
-      char pcasuffix_c[20] = {'\0'};
-      sprintf(pcasuffix_c, "pca%u.%s", pca_dim_out, suffix.c_str());
-      
-      pcasuffix = pcasuffix_c;
-    
-      if(pca_dim_out == 0) {
-        cout << "Please specify the PCA output dimensionality!" << endl;
-        exit(1);
       }
     }
 
@@ -163,33 +153,38 @@ public:
     if(cl.search("--loadPCA")) {
       loadPCA = true;
       loadpca_name = cl.follow("sift.pca.gz","--loadPCA");
-      
-      if(do_pca) {
-        ERR << "You say I shall load the PCA from a file AND compute it? That doesn't make sense!" << endl;
-        exit(1);
-      }
     }
-    
+
     // Make PCA objects
     if( do_pca || loadPCA ) {
       if(!separate_rgb_pca) {
         pca = new PCA(pca_dim_in);
-        
+
         pca_dim_out = cl.follow(pca_dim_out, 2, "-p", "--pca");
       } else {
         pca_r = new PCA(pca_dim_in);
         pca_g = new PCA(pca_dim_in);
         pca_b = new PCA(pca_dim_in);
-        
+
         pca_dim_out = cl.follow(pca_dim_out, 2, "-p", "--pca") / 3;
       }
+
+      if(pca_dim_out == 0) {
+        cout << "Please specify the PCA output dimensionality!" << endl;
+        exit(1);
+      }
+
+      char pcasuffix_c[20] = {'\0'};
+      sprintf(pcasuffix_c, "pca%u.%s", pca_dim_out, suffix.c_str());
+
+      pcasuffix = pcasuffix_c;
     }
-    
+
     //
     // get list of files to be processed
     //
     vector<string> infiles;
-    
+
     if(cl.search("--images")) {
       string filename=cl.next(" ");;
       while(filename!=" ") {
@@ -210,11 +205,17 @@ public:
         }
       }
       ifs.close();
+    } else if (cl.search("--firefilelist")) {
+    	Database db;
+    	db.loadFileList(cl.follow("list","--firefilelist"));
+    	for(uint i=0; i<db.size(); ++i) {
+    		infiles.push_back(db.path()+"/"+db.filename(i));
+    	}
     } else {
       USAGE();
       exit(20);
     }
-  
+
     //
     // processing the files
     //
@@ -222,34 +223,34 @@ public:
     for(uint i=0;i<infiles.size();++i) {
         string filename=infiles[i];
       DBG(10) << "Processing '" << filename << "' (" << i+1<< "/" << infiles.size() << ")." << endl;
-      
+
       if( !im.load(filename) ) {
         ERR << "Image load error! Exiting." << endl;
         exit(1);
       }
-      
-      
+
+
       float *raw_image_r = NULL, *raw_image_g = NULL, *raw_image_b = NULL;
-      
+
       if( use_color ) {
         // Get color channels
         raw_image_r = (float*)malloc(sizeof(float) * im.xsize() * im.ysize());
         raw_image_g = (float*)malloc(sizeof(float) * im.xsize() * im.ysize());
         raw_image_b = (float*)malloc(sizeof(float) * im.xsize() * im.ysize());
-        
+
         for(unsigned long y = 0; y < im.ysize(); ++y) {
           for(unsigned long x = 0; x < im.xsize(); ++x) {
             raw_image_r[im.xsize() * y + x] = im(x,y,0);
             raw_image_g[im.xsize() * y + x] = im(x,y,1);
             raw_image_b[im.xsize() * y + x] = im(x,y,2);
           }
-        } 
+        }
       }
-      
+
       // Convert the image to gray (we need this for the keypoint extraction,
       // so it it done regardless if we use color or not
       im = makeGray(im, 2);
-      
+
       // Get raw image
       float *raw_image = (float*)malloc(sizeof(float) * im.xsize() * im.ysize());
       for(unsigned long x = 0; x < im.xsize(); ++x) {
@@ -257,46 +258,46 @@ public:
           raw_image[im.xsize() * y + x] = im(x,y,0);
         }
       }
-      
+
       //
       // Gaussian scale space
       //
       DBG(10) << "Computing Gaussian scale space ... " << endl;
-      
+
       int         O      = octaves;
       int const   S      = levels;
       int const   omin   = first;
       float const sigman = .5;
       float const sigma0 = 1.6 * powf(2.0f, 1.0f / S);
-      
+
       // optionally autoselect the number number of octaves
       // we downsample up to 8x8 patches
       if(O < 1)
         O = std::max(int (std::floor(log2(std::min(im.xsize(),im.ysize()))) - omin -3), 1);
-      
+
       // initialize scalespace
       VL::Sift *sift = new VL::Sift(raw_image, im.xsize(), im.ysize(), sigman, sigma0, O, S, omin, -1, S+1);
-      
+
       VL::Sift *sift_r = NULL, *sift_g = NULL, *sift_b = NULL;
-      
+
       if( use_color ) {
         sift_r = new VL::Sift(raw_image_r, im.xsize(), im.ysize(), sigman, sigma0, O, S, omin, -1, S+1);
         sift_g = new VL::Sift(raw_image_g, im.xsize(), im.ysize(), sigman, sigma0, O, S, omin, -1, S+1);
         sift_b = new VL::Sift(raw_image_b, im.xsize(), im.ysize(), sigman, sigma0, O, S, omin, -1, S+1);
       }
-      
+
       DBG(10) << "(" << O << " octaves from " << omin << ", " << S << " levels per octave) done." << endl;
-      
-      
+
+
       //
       // SIFT detector
       //
       DBG(10) << "Running SIFT detector (threshold:" << thresh << ", edge-threshold: " << edgeThreshold << ") ..." << flush;
-      
+
       sift->detectKeypoints(thresh, edgeThreshold);
-      
+
       DBG(10) << " done (" << sift->keypointsEnd() - sift->keypointsBegin() << " keypoints)." << endl;
-      
+
       if(n_strongest > 0) {
         DBG(10) << "Selecting " << n_strongest << " strongest ... " << flush;
         sift->selectNStrongest(n_strongest);
@@ -307,12 +308,12 @@ public:
       // SIFT orientations and descriptors
       //
       DBG(10) << "Extracting orientations and descriptors." << endl;
-      
+
       vector<pair<double,double> > positions;
       vector<double> sigmas;
       vector<double> orientations;
       vector<vector<double> > descriptors;
-      
+
       for(VL::Sift::KeypointsConstIter iter = sift->keypointsBegin(); iter != sift->keypointsEnd(); ++iter )
       {
         // detect orientations
@@ -322,12 +323,12 @@ public:
         // compute descriptors
         for(int a = 0 ; a < nangles ; ++a) {
           positions.push_back(make_pair(iter->x, iter->y));
-          
+
           sigmas.push_back(iter->sigma);
           orientations.push_back(angles[a]);
-          
+
           VL::float_t descr[128], descr_r[128], descr_g[128], descr_b[128];
-          
+
           if( !use_color ) {
             sift->computeKeypointDescriptor(descr, *iter, angles[a]);
           } else {
@@ -335,50 +336,50 @@ public:
             sift_g->computeKeypointDescriptor(descr_g, *iter, angles[a]);
             sift_b->computeKeypointDescriptor(descr_b, *iter, angles[a]);
           }
-          
+
           vector<double> descrvec;
-          
+
           if( !use_color ) {
             for(int i = 0; i < 128; ++i) {
               descrvec.push_back(descr[i]);
             }
-            
+
             descriptors.push_back(descrvec);
           } else {
             // 128 * red + 128 * green + 128 * blue = 384
-            
+
             for(int i = 0; i < 128; ++i) {
               descrvec.push_back(descr_r[i]);
             }
-            
+
             for(int i = 0; i < 128; ++i) {
               descrvec.push_back(descr_g[i]);
             }
-            
+
             for(int i = 0; i < 128; ++i) {
               descrvec.push_back(descr_b[i]);
             }
-            
+
             descriptors.push_back(descrvec);
           }
-          
-          if(do_pca) {
+
+          if(do_pca && !loadPCA) {
             if(use_color && separate_rgb_pca) {
               vector<double> descrvec_r, descrvec_g, descrvec_b;
               int index = 0;
-              
+
               for(int i = 0; i < 128; ++i) {
                 descrvec_r.push_back(descrvec.at(index++));
               }
-            
+
               for(int i = 0; i < 128; ++i) {
                 descrvec_g.push_back(descrvec.at(index++));
               }
-            
+
               for(int i = 0; i < 128; ++i) {
                 descrvec_b.push_back(descrvec.at(index++));
               }
-              
+
               pca_r->putData(descrvec_r);
               pca_g->putData(descrvec_g);
               pca_b->putData(descrvec_b);
@@ -388,28 +389,28 @@ public:
           }
         } // next angle
       } // next keypoint
-      
-      
+
+
       //
       // Save as local feature
       //
       LocalFeatures lf;
       lf.filename_ = filename;
-      if(use_color) { lf.dim_ = 384; } 
+      if(use_color) { lf.dim_ = 384; }
       else { lf.dim_ = 128; }
       lf.imageSizeX_ = im.xsize();
       lf.imageSizeY_ = im.ysize();
-      
+
       for(unsigned int i=0; i<positions.size(); ++i) {
         lf.addLocalFeature(descriptors[i], make_pair((uint)positions[i].first,(uint)positions[i].second), (uint)sigmas[i]);
       }
-      
+
       lf.save(filename+"."+suffix);
-      
+
       free(raw_image);
-      
+
       delete sift;
-      
+
       if(use_color) {
         delete sift_r;
         delete sift_g;
@@ -418,92 +419,92 @@ public:
         free(raw_image_g);
         free(raw_image_b);
       }
-      
+
       DBG(20) << "Finished with '" << filename << "'." << endl;
     }
-    
-    if(do_pca) {
+
+    if(do_pca && !loadPCA) {
       if(use_color && separate_rgb_pca) {
         pca_r->dataEnd();
         pca_g->dataEnd();
         pca_b->dataEnd();
-        DBG(20) << "Calculating PCA" << endl;
+        DBG(10) << "Calculating PCA" << endl;
         pca_r->calcPCA();
         pca_g->calcPCA();
         pca_b->calcPCA();
-        DBG(20) << "OK" << endl;
+        DBG(10) << "OK" << endl;
       } else {
         pca->dataEnd();
-        DBG(20) << "Calculating PCA" << endl;
+        DBG(10) << "Calculating PCA" << endl;
         pca->calcPCA();
-        DBG(20) << "OK" << endl;
+        DBG(10) << "OK" << endl;
       }
-      
+
       if(savePCA) {
         pca->save(savepca_name);
-        
-        DBG(20) << "PCA saved as " << savepca_name << endl;
+
+        DBG(10) << "PCA saved as " << savepca_name << endl;
       }
     }
-    
+
     if( loadPCA ) {
-      DBG(20) << "Loading PCA from " << loadpca_name << endl;
+      DBG(10) << "Loading PCA from " << loadpca_name << endl;
       pca->load(loadpca_name);
     }
-    
+
     if( do_pca || loadPCA ) {
-      DBG(20) << "PCA transforming features" << endl;
-      
+      DBG(10) << "PCA transforming features" << endl;
+
       // Do a second iteration over the data for PCA transformation
-      
+
       for(uint i=0;i<infiles.size();++i) {
         LocalFeatures lf;
-        
+
         string lffilename=infiles[i]+"."+suffix;
-        
+
         lf.load(lffilename);
-        
+
         if(use_color && separate_rgb_pca) {
           for(uint j = 0; j < lf.numberOfVectors(); ++j) {
             // Split the vector into RGB first
             vector<double> descrvec_r, descrvec_g, descrvec_b;
             int index = 0;
-            
+
             for(int i = 0; i < 128; ++i) {
               descrvec_r.push_back(lf[j].at(index++));
             }
-            
+
             for(int i = 0; i < 128; ++i) {
               descrvec_g.push_back(lf[j].at(index++));
             }
-            
+
             for(int i = 0; i < 128; ++i) {
               descrvec_b.push_back(lf[j].at(index++));
             }
-            
+
             // Peform the PCA
             vector<double> transformed_r = vector<double>(pca_r->transform(descrvec_r, pca_dim_out));
             vector<double> transformed_g = vector<double>(pca_g->transform(descrvec_g, pca_dim_out));
             vector<double> transformed_b = vector<double>(pca_b->transform(descrvec_b, pca_dim_out));
-            
+
             // Put the data back into the local feature
             lf[j].resize(pca_dim_out * 3);
-            
+
             index = 0;
-            
+
             for(int k = 0; k < pca_dim_out; ++k) {
               lf[j][index++]=transformed_r[k];
             }
-            
+
             for(int k = 0; k < pca_dim_out; ++k) {
               lf[j][index++]=transformed_g[k];
             }
-            
+
             for(int k = 0; k < pca_dim_out; ++k) {
               lf[j][index++]=transformed_b[k];
             }
           }
-          
+
           lf.dim() = pca_dim_out * 3;
         } else {
           for(uint j=0; j<lf.numberOfVectors(); ++j) {
@@ -513,14 +514,14 @@ public:
               lf[j][k]=transformed[k];
             }
           }
-          
+
           lf.dim() = pca_dim_out;
         }
         lf.save(infiles[i]+"."+pcasuffix);
       }
-      DBG(20) << "OK" << endl;
+      DBG(10) << "OK" << endl;
     }
-    
+
   }
 };
 

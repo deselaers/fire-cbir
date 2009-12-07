@@ -1,7 +1,7 @@
 clean:
 	rm -f $(OBJDIR)/*.o $(OBJDIR)/*/*.o $(OBJDIR)/*.d $(OBJDIR)/*/*.d
 	rm -f $(LIBDIR)/*.a
-	rm -f $(BINDIR)/*
+	rm -rf $(BINDIR)/*
 
 $(OBJDIR) $(LIBDIR) $(BINDIR):
 	@mkdir -p $@

@@ -35,8 +35,8 @@ Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 // ============================================================================
 //
 // File          : gzstream.C
-// Revision      : $Revision: 15 $
-// Revision_date : $Date: 2004-06-16 18:52:01 +0200 (Wed, 16 Jun 2004) $
+// Revision      : $Revision: 744 $
+// Revision_date : $Date: 2008-08-15 16:35:49 +0200 (Fri, 15 Aug 2008) $
 // Author(s)     : Deepak Bandyopadhyay, Lutz Kettner
 // 
 // Standard streambuf implementation following Nicolai Josuttis, "The 

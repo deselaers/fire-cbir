@@ -75,6 +75,8 @@ void USAGE() {
        << "                              arbitrary many position parameters" << endl
        << "  -q,--queryCombiner <combiner> to specify the query combination technique." << endl
        << "                              relevance feedback techniques: adding, nn, to be continued..." <<endl
+       << "  --reRanker <reranker>   to specify the reranking technique."<<endl
+       << "                              reranking: none, cluster,greedy,visavis,...."<<endl
        << "  -B,--batch <file>           take the commands from the file instead of listening to a socket" << endl
        << "                              by default the complete ranking is returned for each query" << endl
        << "  -F,--filter <filtersequence> set filter for filtered retrieval; the first distance will be" << endl
@@ -116,7 +118,7 @@ int main(int argc, char **argv)
 
   Server server;
 
-  vector<string> ufos=cl.unidentified_options(45,
+  vector<string> ufos=cl.unidentified_options(46,
                       "-h", "--help", "-c", "--config", "-s",//5
                       "--server", "-f", "--filelist", "-d", "--dist", //10
                       "-D", "--defaultdists", "-w", "--weight", "-r",//15
@@ -125,7 +127,8 @@ int main(int argc, char **argv)
                       "--scoring", "-p", "--password","-I","--interactor",//30
                       "-P","--proxy","-B","--batch","-F", //35
                       "--filter","-u","--dontload","-U","--defdontload",//40
-                      "-t", "--type2bin","--cache","-q","--queryCombiner"); //45
+                                              "-t", "--type2bin","--cache","-q","--queryCombiner", //45
+                                              "--reRanker"); //46
 
   if(ufos.size()!=0)
   {

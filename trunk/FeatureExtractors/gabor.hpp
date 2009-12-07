@@ -36,7 +36,7 @@ const int GABOR_FREQ_START = 2;
    
 #ifdef HAVE_FFT_LIBRARY
 extern "C" {
-  #include <fftw.h>
+  #include FFTW_INCLUDE
 }
 #endif
 

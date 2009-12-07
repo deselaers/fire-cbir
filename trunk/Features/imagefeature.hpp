@@ -72,12 +72,19 @@ public:
 
 
   /// make a new image from a vector
-  ImageFeature(const ::std::vector<double> &vec, uint x, uint y) {
+  ImageFeature(const ::std::vector<double> &vec, uint x, uint y, uint z=1) {
     xsize_=x;
     ysize_=y;
-    zsize_=1;
-    data_.resize(1);
-    data_[0]=vec;
+    zsize_=z;
+    data_.resize(z);
+    for(uint c=0;c<z;++c) {
+      data_[c].resize(x*y);
+      for(uint x=0;x<xsize_;++x) {
+        for(uint y=0;y<ysize_;++y) {
+          data_[c][y*xsize_+x]=vec[y*xsize_*zsize_+x*zsize_+c];
+        }
+      }
+    }
   }
 
   /// deconstruct image

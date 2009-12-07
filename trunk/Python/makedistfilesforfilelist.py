@@ -17,6 +17,9 @@ querybase=""
 l1o=False
 quit=False
 
+start=-1
+stop=-1
+
 while len(sys.argv)>0:
     argv=sys.argv.pop(0)
     if argv=="-s":
@@ -29,6 +32,10 @@ while len(sys.argv)>0:
         quit=True
     elif argv=="-S":
         suffix=sys.argv.pop(0)
+    elif argv=="-start":
+        start=int(sys.argv.pop(0))
+    elif argv=="-stop":
+        stop=int(sys.argv.pop(0))
     else:
         print "Unknown option:",argv
         print """
@@ -38,6 +45,7 @@ USAGE: makedistfilesforfilelist.py <options>
       -p  port (default: 12960)
       -q  database for query
       -S  suffix
+      -start <n>, -stop <n> to process a subset of the querylist, -1 for full database
       -x  exit after having finished
 """
         sys.exit(10)
@@ -52,6 +60,7 @@ USAGE: makedistfilesforfilelist.py <options>
       -p  port (default: 12960)
       -q  database for query
       -S  suffix
+      -start <n>, -stop <n> to process a subset of the querylist
       -x  exit after having finished
 """
     sys.exit(10)
@@ -64,8 +73,14 @@ q.load(querybase)
 
 s=firesocket.FIRESocket()
 s.connect(server,port)
+
+if start==-1:
+    start=0
+if  stop==-1:
+    stop=len(q.files)
+    
 try:
-    for qf in q.files:
+    for qf in q.files[start:stop]:
         cmd="savedistances "+qf[0]+" "+qf[0]+"."+suffix
         s.sendcmd(cmd)
         res=s.getline()

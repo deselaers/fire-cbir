@@ -104,9 +104,12 @@ public:
     double result=0.0;
     uint M=dists.size();
     if (M>weights_.size()) {weights_.resize(M,0.0);}
+    //DBG(10)<< "SCORE :";
     for(uint i=0;i<M;++i) {
       result+=weights_[i]*dists[i];
+      //BLINK(10)<<" "<<dists[i];
     }
+    //BLINK(10)<<std::endl;
     return exp(-result);
   }
 
