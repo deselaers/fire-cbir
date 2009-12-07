@@ -1,4 +1,6 @@
 #!/bin/bash
+mkdir -p $ARCH
+mkdir -p include
 mkdir tmp
 cd tmp
 tar -xf ../archives/interpol.tar 
