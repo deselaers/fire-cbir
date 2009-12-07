@@ -1,4 +1,6 @@
 #!/bin/bash
+mkdir -p $ARCH
+mkdir -p include
 
 
 cat <<EOF

@@ -1,4 +1,9 @@
 #!/bin/bash
+
+mkdir -p $ARCH
+mkdir -p include
+
+
 mkdir tmp
 cd tmp
 tar -xzf ../archives/libsvm-2.85.tar.gz 
