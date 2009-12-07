@@ -1,4 +1,14 @@
 #!/bin/bash
+
+cat <<EOF
+This script tries to put all files required for the interpolation function in place
+
+Download interpol.tar from    http://bigwww.epfl.ch/thevenaz/interpolation/
+
+Please put the archive to $PWD/archives/interpol.tar and press enter to continue
+EOF
+read
+
 mkdir -p $ARCH
 mkdir -p include
 mkdir tmp
