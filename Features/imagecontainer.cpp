@@ -93,6 +93,23 @@ DescriptionSet& ImageContainer::description() {
   }
   return vec;
 }
+
+ImageContainer ImageContainer::operator-(const ImageContainer & img) const {
+  
+  ImageContainer result=ImageContainer(*this);
+  for (uint i = 0; i < features_.size(); i++) {
+    VectorFeature *vf=dynamic_cast<VectorFeature *>(features_[i]);
+
+    if (vf) {
+      (*(result.features_[i])).operator-=(*vf);
+    }
+    else{
+      ERR<<"Feature cant be vectorized!"<<endl;
+      exit(20);
+    }
+  }
+  return result;
+}
   
 struct CopyFromPointer {
   template<class T> T* operator()(const T *r) const {

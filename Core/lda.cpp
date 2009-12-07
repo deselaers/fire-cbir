@@ -2,6 +2,7 @@
 #include "Lapack.hh"
 #include "diag.hpp"
 #include "gzstream.hpp"
+#include <limits>
 
 using namespace std;
 using namespace Lapack;

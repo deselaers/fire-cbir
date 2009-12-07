@@ -27,16 +27,21 @@
 #include "basescoring.hpp"
 #include "linearscoring.hpp"
 #include "maxentscoring.hpp"
+#include "svmscoring.hpp"
 #include "getscoring.hpp"
 #include "distanceinteractor.hpp"
 
+
 typedef ::std::pair<double,uint> ResultPair;
+
+
 class Retriever;
 
 class QueryCombiner;
 class AdddingQueryCombiner;
+class ReRanker;
 #include "querycombiner.hpp"
-
+#include "reranker.hpp"
 
 
 /** retriever-class: this class contains the logic of the image
@@ -94,6 +99,9 @@ private:
   /// querycombiner is the object that takes care about combining different queries if several 
   /// queries are given in one step. This allows for implementation of relevance feedback mechanisms
   QueryCombiner* queryCombiner_;
+
+  /// reranker is able to re-rank a result list, e.g. diversity based reranking with k-means clustering
+  ReRanker* reRanker_;
 
   /// the number of results returned for a query
   uint results_;
@@ -249,6 +257,9 @@ public:
 
   /// set a new query combining algorithm
   void setQueryCombiner(const std::string &queryCombinerName);
+
+  /// set a new reRanking algorithm
+  void setReranking(const std::string &rerankingName);
   
   /// how many images are in the database?
   uint numberOfFilelistEntries() const;

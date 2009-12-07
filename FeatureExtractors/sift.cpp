@@ -51,6 +51,8 @@
 #include<algorithm>
 #include<iostream>
 #include<sstream>
+#include <limits>
+#include <cstring>
 
 using namespace VL ;
 
@@ -629,6 +631,12 @@ process(const pixel_t* _im_pt, int _width, int _height)
   }
 }
 
+bool keypointIsWeaker(const Sift::Keypoint &kp1, const Sift::Keypoint &kp2)
+{
+  return kp1.intensity < kp2.intensity;
+}
+
+
 /** @brief Sift detector
  **
  ** The function runs the SIFT detector on the stored Gaussian scale
@@ -925,13 +933,8 @@ Sift::detectKeypoints(VL::float_t threshold, VL::float_t edgeThreshold)
     } // refine block
 
   } // next octave
-  
-}
 
-
-bool keypointIsWeaker(const Sift::Keypoint &kp1, const Sift::Keypoint &kp2)
-{
-  return kp1.intensity < kp2.intensity;
+  std::sort(keypoints.rbegin(), keypoints.rend(), keypointIsWeaker);
 }
 
 // Only keep the N strongest keypoints

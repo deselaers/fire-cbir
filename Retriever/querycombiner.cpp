@@ -51,6 +51,7 @@ void ScoreSumQueryCombiner::query(const vector<ImageContainer*> posQueries, cons
     for (uint i=0; i<N; ++i) {
       results[i].first+=negWeight*(1.0-activeScores[i]);
     }
+
   }
   BLINK(10) << endl;
 }

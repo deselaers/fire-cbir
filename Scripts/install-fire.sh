@@ -1,8 +1,5 @@
 #!/bin/bash
 
-echo "This script is outdated and from an old version of fire"
-exit 
-
 if [ $# -ne 2 ] ; then
   echo "USAGE: install-fire.sh <destinationpath> <imagepath>"
   echo "  where destinationpath is the path where FIRE will be installed" 

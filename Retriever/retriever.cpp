@@ -28,12 +28,13 @@
 #include "getscoring.hpp"
 #include "net.hpp"
 
+
 using namespace std;
 
 #include "ScopeTimer.h"
 
 Retriever::Retriever() :
-  database_(), imageComparator_(), queryCombiner_(new ScoreSumQueryCombiner(*this)), results_(0), extensions_(0), interactor_(), filterApply_(false), partialLoadingApply_(false), filter_() {
+  database_(), imageComparator_(), queryCombiner_(new ScoreSumQueryCombiner(*this)), reRanker_(new ReRanker(*this)), results_(0), extensions_(0), interactor_(), filterApply_(false), partialLoadingApply_(false), filter_() {
   scorer_=new LinearScoring();
   //  queryCombiner_=new AddingQueryCombiner(*this);
 }
@@ -83,6 +84,31 @@ void Retriever::setQueryCombiner(const string &queryCombiningName) {
   queryCombiner_->setParameters(queryCombiningName);
 }
 
+void Retriever::setReranking(const string &rerankingName){
+
+  delete reRanker_;
+  if (rerankingName.find("none")==0){
+    reRanker_=new ReRanker(*this);
+  } else if (rerankingName.find("cluster")==0){
+      DBG(10)<<"Adding clustering reranker " << endl;
+      reRanker_=new ClusterReranker(*this);
+  } else if (rerankingName.find("greedy")==0){
+    DBG(10)<<"Adding greedy reranker "<<endl;
+    reRanker_=new GreedyReranker(*this);
+  } else if (rerankingName.find("dp")==0) {
+    DBG(10) << "DPOptimisingReranker" << endl;
+    reRanker_=new DPOptimisingReranker(*this);
+  } else if (rerankingName.find("monoDP")==0) {
+    DBG(10) << "DP2NeyReranker" << endl;
+    reRanker_=new DPOpt2(*this);
+  }  else {
+    ERR << "Unknown reranking '"<<rerankingName<<"'. Using 'none' with default parameters."<<endl;
+    reRanker_=new ReRanker(*this);
+  }
+  reRanker_->setParameters(rerankingName);
+}
+  
+
 void Retriever::resolveNames(const vector< string > &queryNames, vector<ImageContainer*> &queries, stack<ImageContainer*> &newCreated) {
   for (uint i=0; i<queryNames.size(); ++i) {
     ImageContainer* tmp=NULL;
@@ -118,6 +144,10 @@ void Retriever::retrieve(const vector< string >& posQueryNames, const vector< st
 
   retrieve(posQueries, negQueries, results);
   
+  vector<ResultPair> tmp;
+  reRanker_->rerank(posQueries, negQueries, results,tmp);
+  results=tmp;
+  
   while (!newCreated.empty()) {
     delete newCreated.top();
     newCreated.pop();
@@ -126,7 +156,7 @@ void Retriever::retrieve(const vector< string >& posQueryNames, const vector< st
 
 void Retriever::getScores(const ImageContainer* q, vector<double>&scores) {
 
-  ScopeTimer st1("Retriever::getScores");
+  ScopeTimer st1((char*)"Retriever::getScores");
 
   uint N=database_.size();
   uint M=database_.numberOfSuffices();
@@ -139,7 +169,7 @@ void Retriever::getScores(const ImageContainer* q, vector<double>&scores) {
   {
     //get distance to each of the database images
     { // begin "get distance" scope
-      ScopeTimer st2("Retriever::getScores -> get distance");
+      ScopeTimer st2((char*)"Retriever::getScores -> get distance");
 
       //this next llop can be done in parallel
       //but each of the threads needs its own imgDists vector
@@ -162,7 +192,7 @@ void Retriever::getScores(const ImageContainer* q, vector<double>&scores) {
 
     //normalize the distances
     { // begin "normalize" scope
-      ScopeTimer st3("Retriever::getScores -> normalize");
+      ScopeTimer st3((char*)"Retriever::getScores -> normalize");
 
       //this next loop is parallelized, too. note that loop-local
       //variables are not problematic, as they are instantiated for each
@@ -186,13 +216,13 @@ void Retriever::getScores(const ImageContainer* q, vector<double>&scores) {
 
   // here: distance interactions: this is still quite buggy
   { // begin "interactor" scope
-    ScopeTimer st4("Retriever::getScores -> interactor.apply()");
+    ScopeTimer st4((char*)"Retriever::getScores -> interactor.apply()");
     interactor_.apply(distMatrix);
   } // end "interactor" scope
 
   //now get the scores
   { // begin "get the scores" scope
-    ScopeTimer st5("Retriever::getScores -> get the scores");
+    ScopeTimer st5((char*)"Retriever::getScores -> get the scores");
     for (uint i=0; i<N; ++i) {
       DBG(105) << "DISTS:";
       for (uint j=0; j<M; ++j) {

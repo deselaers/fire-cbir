@@ -75,7 +75,8 @@ public:
   virtual void initialize(Database &, uint) {};
   virtual void start(const BaseFeature*) {}
   virtual void stop(){}
-  virtual void tune(const std::vector<const BaseFeature*>& posFeat, const std::vector<const BaseFeature*>& negFeat) {}
+    /** tune the parameters of the distance function given a set of positive and negative queries, e.g. after relevance feedback. */
+  virtual void tune(const std::vector<const BaseFeature*>&, const std::vector<const BaseFeature*>&) {}
 };
 
 #endif

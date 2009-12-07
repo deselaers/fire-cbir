@@ -33,6 +33,8 @@ double TextFeatureDistance::distance(const BaseFeature* queryFeature, const Base
     if(db && query) {
       if(rsv_table_.find(db->value()) != rsv_table_.end()) {
         double dist = max_rsv_ - rsv_table_[db->value()];
+        DBG(20) << VAR(db->value()) << " " << VAR(dist)  << endl;
+
         /*
           DBG(10) << "found one with filename "<<db->value()
           << " and RSV " << rsv_table_[db->value()]
@@ -98,7 +100,7 @@ void TextFeatureDistance::query_wmir(const string& _query) {
         max_rsv_ = rsv;
       }
       rsv_table_[filename] = rsv;
-      DBG(30) << filename << " " << rsv << endl;
+      DBG(15) << filename << " " << rsv << endl;
     }
   }
   

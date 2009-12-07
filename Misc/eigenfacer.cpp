@@ -6,6 +6,7 @@
 #include <fstream>
 #include <sstream>
 #include "getpot.hpp"
+#include <limits>
 
 #ifdef HAVE_FFT_LIBRARY
 extern "C" {

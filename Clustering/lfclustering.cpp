@@ -20,6 +20,7 @@
 #include <map>
 #include <string>
 #include "diag.hpp"
+#include <libgen.h>
 #include "baseclusterer.hpp"
 #include "em.hpp"
 #include "getpot.hpp"
@@ -88,6 +89,7 @@ void USAGE() {
        << "   HISTOGRAMIZATION (probably only suitable if --filelist was used" << endl
        << "    --noClustering <filename> don't cluster the local features, but load the model from the given file" << endl
        << "    --histogramization   to create local feature histograms for each of the clustered files" << endl
+       << "    --histoOutputPath  where to save the histograms" << endl
        << "    --suffix             to change the suffix, usually 'histo.gz'" << endl
        << "    --fuzzy              to use fuzzy assignments for histogramization" << endl
        << "       fuzzy is only supported if used with --noClustering." << endl
@@ -146,6 +148,7 @@ int main(int argc, char **argv) {
   double fuzzyAlpha=cl.follow(0.5,"--fuzzyalpha");
   
   bool saveBeforeSplits=cl.search("--saveBeforeSplits");
+  string histopath=cl.follow("","--histoOutputPath");
 
   string splitMode = cl.follow("allSplit","-splitMode");
   string disturbMode = cl.follow("meanDisturb","-disturbMode");
@@ -255,6 +258,8 @@ int main(int argc, char **argv) {
     //------------------------------------------------
     
     if(cl.search("--histogramization")) {
+
+
       if(fuzzy) {
         ERR << "Fuzzy not supported for this case. Only supported if run with --noClustering." << endl;
         exit(10);
@@ -274,7 +279,12 @@ int main(int argc, char **argv) {
           ++currentPosition;
         }
         
-        histo.save(filenames[i]+"."+suffix);
+        if(histopath!="") {
+          string bname=basename(const_cast<char*>(filenames[i].c_str()));
+          histo.save(histopath+"/"+bname+"."+suffix);
+        } else {
+          histo.save(filenames[i]+"."+suffix);
+        }
         BLINK(15) << " done" << endl; 
       }
       
@@ -397,7 +407,12 @@ int main(int argc, char **argv) {
           
           fuzzyHisto.save(filenames[i]+"."+fuzzysuffix);
         } else {
-          histo.save(filenames[i]+"."+suffix);
+          if(histopath!="") {
+            string bname=basename(const_cast<char*>(filenames[i].c_str()));
+            histo.save(histopath+"/"+bname+"."+suffix);
+          } else {
+            histo.save(filenames[i]+"."+suffix);
+          }
         }
         
 

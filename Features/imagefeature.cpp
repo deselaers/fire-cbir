@@ -104,6 +104,8 @@ bool ImageFeature::load(const ::std::string &filename) {
 bool ImageFeature::load(const ::std::string& filename, bool forceGray){
   this->filename_=filename;
 
+  //  forceGray=true;
+
 #ifdef HAVE_IMAGE_MAGICK
   //temporary pixel data
   ColorGray grayPixel;
@@ -195,7 +197,7 @@ Image ImageFeature::makeMagickImage(const uint &idx1, const uint &idx2, const ui
       }
     }
   }
-  result.syncPixels();
+  //  result.syncPixels();
   return result;
 }
 #else

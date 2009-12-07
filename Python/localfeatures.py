@@ -22,7 +22,10 @@ class LocalFeatures:
         self.imagesize=(0,0)
         self.features=[]
         self.selffilename=""
-
+        
+    def __getitem__(self,i):
+        return self.features[i]
+    
     def load(self,filename):
         f=gzip.GzipFile(filename)
         self.selffilename=filename
@@ -64,7 +67,13 @@ class LocalFeatures:
             else:
                 print "'%s' is an unknown keyword... ignoring and continuiing nonetheless."%(toks[0])
 
-    
-
-
-
+    def save(self,filename):
+        f=gzip.GzipFile(filename,"w")
+        f.write("FIRE_localfeatures\n")
+        f.write("winsize %d\ndim %d\nsubsampling %d\npadding %d\nnumberOfFeatures %d\nvarthreshold %d\nzsize %d\nfilename %s\nimagesize %d %d\nfeatures %d\n" % (self.winsize,self.dim,self.subsampling,self.padding,self.numberOfFeatures,self.varthreshold,self.zsize,self.filename,self.imagesize[0],self.imagesize[1],len(self.features)))
+        for lf in self.features:
+            f.write("feature %d %d %d " % (lf.posx,lf.posy,lf.scale))
+            for v in lf.vec:
+                f.write(str(v)+" ")
+            f.write("\n")
+        f.close()

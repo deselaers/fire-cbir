@@ -234,7 +234,7 @@ void Database::loadFeatures() {
           path+="/"+suffixList_[j];
         }
         BLINK(30) << suffixList_[j] << " ";
-        cout << "loading " << path << "/" << database_[i]->basename() << suffixList_[j] << "." << relevantSuffix(j) << endl;
+        DBG(20) << "loading " << path << "/" << database_[i]->basename() << suffixList_[j] << "." << relevantSuffix(j) << endl;
         database_[i]->operator[](j)=fl.load(database_[i]->basename(),suffixList_[j],relevantSuffix(j),path);
         if(!checkConsistency(database_[0]->operator[](j), database_[i]->operator[](j))) {
           DBG(10) << "loading feature " << j << ":"  << suffixList_[j] << ": features for " 

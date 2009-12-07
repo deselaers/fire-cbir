@@ -1,4 +1,4 @@
-/* $Id: pstream.hpp 107 2004-11-17 18:12:42Z deselaers $
+/* $Id: pstream.hpp 744 2008-08-15 14:35:49Z deselaers $
 PStreams - POSIX Process I/O for C++
 Copyright (C) 2001,2002,2003,2004 Jonathan Wakely
 

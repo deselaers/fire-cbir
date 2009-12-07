@@ -23,7 +23,7 @@ IMAGEMAGICK_LDFLAGS=`Magick++-config --ldflags`
 #-lapack/atlas/blas----------------------------------------------------
 # note: you don't need this if you don't want to use PCA
 LAPACK_FLAGS=-DHAVE_LAPACK
-LAPACK_LIBS=-latlas  -llapack -lg2c
+LAPACK_LIBS=-latlas  -llapack
 #----------------------------------------------------------------------
 
 #- SQLite -------------------------------------------------------------
@@ -37,7 +37,7 @@ SQLITE_LDLIBS=-lsqlite3
 # this library is needed for gabor feature extraction
 # if not available, the corresponding classes wont do anything useful
 #
-FFT_FLAGS=-DHAVE_FFT_LIBRARY 
+FFT_FLAGS=-DHAVE_FFT_LIBRARY  -DFFTW_INCLUDE='<fftw.h>'
 FFT_LIB_LDLIBS=-lfftw 
 #----------------------------------------------------------------------
 
@@ -102,14 +102,28 @@ SIFT_FLAGS=-DVL_LOWE_STRICT -DVL_USEFASTMATH
 # http://www.vision.ee.ethz.ch/~surf/
 # http://www.vision.ee.ethz.ch/~surf/SURF-V1.0.9.tar.gz
 
-SURF_LDFLAGS=-Llib/i686/surf
-SURF_LDLIBS=-lSurf
-SURF_FLAGS=-DUSE_SURF
+# SURF_LDFLAGS=-Llib/i686/surf
+# SURF_LDLIBS=-lSurf
+# SURF_FLAGS=-DUSE_SURF
 #----------------------------------------------------------------------
+
+LOGLIN_FLAGS=-IOptionalLibraries/loglin
+LOGLIN_LDFLAGS=-LOptionalLibraries/loglin/lib/$(ARCH).dbg
+LOGLIN_LDLIBS=-lModels -lImage -lFileIO -lMath -lCore
+LOGLIN_MODEL_OBJ=OptionalLibraries/loglin/lib/$(ARCH).dbg/libModels.a
+
+
+.PHONY: loglinlibs
+LOGLINLIBS=loglinlibs
  
-SPECIAL_LIBRARIES_FLAGS =  -IOptionalLibraries/include $(KDTREE_FLAGS) $(SIFT_FLAGS) $(INTERPOL_FLAGS) $(SURF_FLAGS) $(RAST_FLAGS)
-SPECIAL_LIBRARIES_LDFLAGS = -LOptionalLibraries/$(ARCH)
-SPECIAL_LIBRARIES_LDLIBS = $(LIBSVM_OBJECTS) $(INTERPOL_OBJECTS) $(KDTREE_LDLIBS) $(SURF_LDLIBS) $(RAST_OBJECTS)
+$(LOGLINLIBS):
+	echo "Making libmodels"
+	$(MAKE) -C OptionalLibraries/loglin libs
+
+ 
+SPECIAL_LIBRARIES_FLAGS =  -IOptionalLibraries/include $(KDTREE_FLAGS) $(SIFT_FLAGS) $(INTERPOL_FLAGS) $(SURF_FLAGS) $(RAST_FLAGS) $(LIBSVM_FLAGS) $(LOGLIN_FLAGS)
+SPECIAL_LIBRARIES_LDFLAGS = -LOptionalLibraries/$(ARCH) $(LOGLIN_LDFLAGS)
+SPECIAL_LIBRARIES_LDLIBS = $(LIBSVM_OBJECTS) $(INTERPOL_OBJECTS) $(KDTREE_LDLIBS) $(SURF_LDLIBS) $(RAST_OBJECTS) $(LOGLIN_LDLIBS) 
 
 #----------------------------------------------------------------------
 # global configuration section

@@ -2,7 +2,7 @@
 #define __lda_hpp__
 
 #include <vector>
-
+#include <string>
 
 class LDA {
 public:

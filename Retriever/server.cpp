@@ -241,7 +241,10 @@ void Server::parseConfig(GetPot &config)
   if(config.search(2,"-q","--queryCombiner")) {
     retriever_.setQueryCombiner(config.follow("adding:POS=1.0:NEG=0.833",2,"-q","--queryCombiner"));
   }
-  
+
+  if(config.search("--reRanker")) {
+    retriever_.setReranking(config.follow("cluster:CONS=100:RR=20:CLUSTERS=5","--reRanker"));
+  } 
   if(config.search(2,"-U","--defdontload"))
   {
     partialLoadingString="default";
@@ -303,8 +306,9 @@ void Server::parseConfig(GetPot &config)
     relevanceFile_=config.follow("",2,"-R","--relevancefile");
   }
 
-  retriever_.setScoring(config.follow("linear",2,"-C","--scoring"));
+  retriever_.setScoring("linear");
 
+  
   log_=LogFile(config.follow("",2,"-l","--logfile"));
 
   if(config.search(2,"-D","--defaultdists"))
@@ -336,6 +340,8 @@ void Server::parseConfig(GetPot &config)
     DBG(10) << "weight[" << idx << "]=" << w << endl;
   }
 
+  retriever_.setScoring(config.follow("linear",2,"-C","--scoring"));
+  
   if(config.search(2,"-I","--interactor"))
   {
     retriever_.setInteractor(config.follow("",2,"-I","--interactor"));
@@ -541,8 +547,9 @@ ServerStatus Server::processCommand(const ::std::string& commandline, ::std::str
       }
     }
     retriever_.retrieve(posQueriesNames, negQueriesNames,results);
+        
+    // output!
     sort(results.rbegin(), results.rend());
-    
     for(uint i=resultsStep*retriever_.results();i<(resultsStep+1)*retriever_.results() and i<retriever_.numberOfFilelistEntries();++i) {
       os << retriever_.filelist(results[i].second) << " " << results[i].first << " ";
     }

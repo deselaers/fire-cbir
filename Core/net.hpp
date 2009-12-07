@@ -36,8 +36,8 @@ Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 /** 
  * Basic network socket class.
  * @author Thomas Deselaers <thomas@deselaers.de>
- * $Date: 2006-06-30 10:34:33 +0200 (Fri, 30 Jun 2006) $
- * $Id: net.hpp 558 2006-06-30 08:34:33Z deselaers $
+ * $Date: 2008-08-15 16:35:49 +0200 (Fri, 15 Aug 2008) $
+ * $Id: net.hpp 744 2008-08-15 14:35:49Z deselaers $
  * 
  * This class implements a network socket. There are several operators
  * for reading and writing form and to this socket. It should be quite
@@ -136,8 +136,8 @@ private:
 
 /** ServerSocket class. 
  * @author Thomas Deselaers <thomas@deselaers.de>
- * $Date: 2006-06-30 10:34:33 +0200 (Fri, 30 Jun 2006) $
- * $Id: net.hpp 558 2006-06-30 08:34:33Z deselaers $
+ * $Date: 2008-08-15 16:35:49 +0200 (Fri, 15 Aug 2008) $
+ * $Id: net.hpp 744 2008-08-15 14:35:49Z deselaers $
  * 
  * This class implements a ServerSocket, which is able to listen for
  * clients, accepts connections and return Sockets for incoming clients.

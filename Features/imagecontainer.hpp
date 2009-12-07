@@ -103,6 +103,9 @@ public:
   
   /// clears the imagecontainer
   void clear(void);
+
+  ImageContainer operator-(const ImageContainer & img) const;
+
 };
 
 
