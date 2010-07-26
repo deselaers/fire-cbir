@@ -27,3 +27,9 @@ This does not include the integration  with the Apache webserver.
  * convert all images into jpg (not necessary but often avoids problems)
  * extract color histograms
   * ~/fire-cbir/bin/extractcolorhistograms --color --images /var/www/fire-img/*.jpg 
+ * create a filelist for this dataset
+  * cd /var/www/fire-img
+  * echo FIRE_filelist > filelist
+  * echo suffix color.histo.gz >> filelist
+  * echo path this >> filelist
+  * ls \*.jpg | sed 's/^/file /' >> filelist
