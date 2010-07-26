@@ -10,4 +10,5 @@ To facilitate installation, I provide here a description how to compile the FIRE
  * cd fire-cbir
  * make 
 
+After that 
  
