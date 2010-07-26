@@ -35,7 +35,7 @@ Now all the files should be in place for the FIRE webinterface to work
  * put a set of medium sized images (e.g. 500x500 pixels) into this directory
  * convert all images into jpg (not necessary but often avoids problems)
  * extract color histograms
-  * ~/fire-cbir/bin/extractcolorhistograms --color --images /var/www/fire-img/*.jpg 
+  * ~/fire-cbir/bin/extractcolorhistograms --color --images /var/www/fire-img/`*`.jpg 
  * create a filelist for this dataset
   * cd /var/www/fire-img
   * echo FIRE_filelist > filelist
