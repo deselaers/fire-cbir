@@ -1,6 +1,5 @@
 #summary Step-by-step instruction to compile FIRE on Ubuntu 10.4.
 
-= Introduction =
 
 To facilitate installation, I provide here a description how to compile the FIRE server on Ubuntu 10.4 from scratch
 
