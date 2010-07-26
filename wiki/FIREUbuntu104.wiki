@@ -15,8 +15,15 @@ To facilitate installation, I provide here a description how to compile the FIRE
 After that the bin-Directory contain a total of 47 binaries and the FIRE server is ready to use.
 This does not include the integration  with the Apache webserver.
 
-== Setting up a dataset ==
-
-
 
 == Integration with Apache ==
+ * sudo apt-get install apache2
+
+== Setting up a dataset ==
+ * create a directory accessible by the webserver (does not have to be accessible but often avoids problems)  and make it owned by a normal user
+  * sudo mkdir /var/www/fire-img
+  * sudo chown $USER /var/www/fire-img
+ * put a set of medium sized images (e.g. 500x500 pixels) into this directory
+ * convert all images into jpg (not necessary but often avoids problems)
+ * extract color histograms
+  * ~/fire-cbir/bin/extractcolorhistograms --color --images /var/www/fire-img/*.jpg 
