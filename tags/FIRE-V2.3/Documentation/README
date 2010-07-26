@@ -1,0 +1,68 @@
+$Header$
+
+README for FIRE -- Flexible Image Retrieval Engine V2
+
+Sorry, here is nearly no information so far. 
+
+Just: If you want to work with FIRE, use this version not the old one.
+
+
+Table Of Contents:
+
+   1. General setup
+   2. Creation of databases
+   2.0 filelists
+   2.1 color histograms
+   2.2 local features
+
+
+
+
+1.
+
+2.
+2.0
+2.1
+2.2
+  To use local features in fire, several steps are necessary to reach
+  one of the possible ways to use local features.
+
+  If you want to use global local feature distance:
+    necesarry steps:
+      1. extract local features
+          this will most probably include calculating the PCA of the extracted features
+         tool: extractlocalfeatures
+
+      2. create a kd-tree of the local features to be loaded in the global local feature distance
+         tool: createlfkdtree
+          
+      3. run fire with appropriate options -d X globallocalfeaturedistance:TREE=<file where the tree is saved>
+         this is currently not possible in the webinterface
+     
+      NOTE: this may be very inefficient if lots of local features are
+      loaded. Especially it is very memory hungry as the local
+      features are stored twice: once in the tree and once for the
+      images.
+
+  If you want to use local feature histograms:
+      1. extract local features
+          this will most probably include calculating the PCA of the extracted features
+          tool: extraclocalfeatures
+      2. cluster the local features and create histograms:
+          tool: lfclustering
+
+
+          note: if you have a distinguished set of test and train data
+          you have to process these separately as well in step 1 as in step 2.
+          for this case extraclocalfeatures and lfclustering offer
+          options to load the appropriate pca and clustermodel respectively
+
+      3. run fire with appropriate options.
+         that is, you have to load the features and select a suitable distance measure for histograms
+          
+   
+ 
+
+
+
+

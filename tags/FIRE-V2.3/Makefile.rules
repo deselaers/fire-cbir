@@ -1,0 +1,23 @@
+clean:
+	rm -f $(OBJDIR)/*.o $(OBJDIR)/*/*.o $(OBJDIR)/*.d $(OBJDIR)/*/*.d
+	rm -f $(LIBDIR)/*.a
+	rm -rf $(BINDIR)/*
+
+$(OBJDIR) $(LIBDIR) $(BINDIR):
+	@mkdir -p $@
+
+$(OBJDIR)/%.o: %.cpp
+	@mkdir -p  `dirname $@`
+	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -c -o $@ $<
+
+$(OBJDIR)/%.o: %.c
+	@mkdir -p  `dirname $@`
+	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -c -o $@ $<
+
+$(OBJDIR)/%.d: %.cpp
+	@mkdir -p `dirname $@`
+	@$(MAKEDEPEND) -Y $(CPPFLAGS) $< -f - 2>/dev/null | sed 's|\($*\.o\):|$(OBJDIR)/\1 $@:|' >$@ ; [ -e $@ ] || rm -f $@ 2>&1 /dev/null
+	
+$(LIBDIR)/%.a:
+	@mkdir -p $(LIBDIR)
+	$(MAKELIB) $@ $^

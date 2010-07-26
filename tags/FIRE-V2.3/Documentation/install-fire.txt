@@ -1,0 +1,277 @@
+This document gives short instructions on how to get a basic
+installation of FIRE running.  It is split into two sections. 
+
+Section 1 describes how to install FIRE using the install-fire.sh
+script. Section 2 explains very shortly how to do the same by hand.  
+I recommend to follow Section 1 or enter the commands that are executed
+by the script by hand as this method worked for several different
+installations for me.
+
+
+SECTION 1: 
+
+ Delivered with FIRE (on the website, in the ARCHIVE) you find two files:
+ install-fire.txt (which you are currently reading) and install-fire.sh. 
+
+ 
+  To call install-fire.sh first decide where you want to install the FIRE
+  demo. Also make sure you have a directory containing a reasonable number
+  of images in JPEG format (although FIRE can handle all image
+  formats that imagemagick can, this script is dealing with JPEG
+  images only). 
+
+  When you have decided, call install-fire.sh:
+
+  bash install-fire.sh <path where you want to install> <image directory path>
+
+  where you have to specify both paths as absolute paths, 
+  i.e. starting with a "/"
+
+  To be able to use FIRE you need:
+   - imagemagick with developer data (i.e. headers,...)
+   - gzlib with developer data (i.e. headers,...)
+   - python in a recent version (>=2.3)
+   - python-imaging-lib (pil) for your python version
+   - atlas and lapack libraries
+
+  after install-fire.sh has finished successfully you have:
+  
+  in your destination directory:
+  - an installation of apache
+  - a compiled version of fire 
+  - a FIRE_filelist describing the images and the color histograms in your 
+    image path
+
+  in the image directory: 
+  - one color histogram feature file per jpg-image
+  
+ install-fire.sh does the following:
+  1. get to know the architecture on which it is running
+
+      As FIRE is developed in a heterogeneous network, it supports
+      being compiled for several architectures in one source
+      directory. Therefore it needs this information.
+
+      If you want to run "make" in the fire directory yourself, you 
+      should therefore set the environment variable "ARCH" to the 
+      appropriate value (e.g. i686, powerpc, ...)
+
+  2. download FIRE sources 
+
+       Even if you have them already, the script downloads them anyway
+       because I don't want to assume this.
+
+  3. download APACHE sources
+
+       We will build an apache web server for the simple installation.
+       if you want FIRE to be integrated with your own web server you can
+       do so easily by imitating the steps the script does.
+
+  4. compile the apache server and fiddle the configuration to use
+     port 8123 instead of 80 to be able to run it as "non-root"-user.
+     
+     this takes about 5-10 minutes on a recent PC (powerpc 1.5Ghz)
+  
+  5. build fire.
+     
+     this includes several steps:
+     a) download interpolation libraries
+     b) compile interpolation libraries
+     c) compile fire and feature extraction tools
+     d) copy all the stuff the web interface needs to the appropriate
+        directories in the apache installation
+
+  6. extract features from the images in the specified directory
+     
+     Only color histograms are extracted as this works very fast.
+     If you want more features you have to use the built extraction utilities
+     and put the suffix into the filelist (see below).
+  
+  7. create a filelist to let fire know which images and which
+     features to use
+ 
+  8. start the apache web server
+ 
+  9. start the fire image retrieval server using the image features
+     extracted above
+
+ 10. when the script has finished, fire is running and at the bottom
+     of your terminal there should be some output like this:
+
+     (2) [server.cpp:551:start] Waiting for connections on port 12960
+
+ 11. then you can access your fire installation via your web browser on
+
+     http://localhost:8123/cgi-bin/fire.cgi
+
+     where you should find the web interface very similar to the
+     web interface of the demo system online on my website:
+
+     http://www-i6.informatik.rwth-aachen.de/~deselaers/fire.html
+
+
+
+SECTION 2:
+
+
+This document tries to give a short overview on how to install a running
+demo system using fire and a small database.
+
+You need several things.
+ - the FIRE archive (that you probably have, as you obviously can read
+   this text)
+ - an apache web server (maybe you already have one, anyway here in
+   this document it is described how to compile your own one.)
+ - to be able to use ALL features of fire you will need several libraries. 
+   Some of them are publicly available, but not all:
+   
+   * KD-Tree library by Javi Cano: 
+     This library is released under GPL, but as far as I know there is
+     no public download site. You need it for
+     globallocalfeaturedistance, which is not one of the most
+     important features. Thus you can probably live without it. Anyway
+     if you want to use it, feel free to contact either me, or Javi
+     himself (http://www.iti.upv.es/~jcano/). I am pretty sure that he
+     will give it to you, don't forget to greet him from me :-)
+     But I propose to start without it. To do so, remove all lines
+     starting with KDTREE from the Makefile.
+
+
+   * interpolation library by Philippe Thevenaz
+     http://bigwww.epfl.ch/thevenaz/interpolation/
+
+     mkdir interpol
+     cd interpol
+     wget http://bigwww.epfl.ch/thevenaz/interpolation/interpol.tar
+     tar -xf interpol.tar
+     mv interpol/* .
+     
+     this library is needed for interpolation of images, some routines
+     in imagelib need them and the invariant feature extraction tools
+     need them. You probably want to use it.
+
+   * libfft
+     is available for most linux distributions.
+     This is necessary for Gabor features. As currently Gabor features
+     are not yet very much tested, you probably won't need it.
+ 
+     Here I suggest to start without it, too. To do so, remove all
+     lines starting with FFT_ from the Makefile
+
+
+INSTALLING APACHE
+  Go to the apache website and get the latest version of their HTTP server
+  currently this is 2.0.53.
+  In the following I assume that you want to install FIRE in the
+  directory $FIREDST
+
+  mkdir $FIREDST
+  cd $FIREDST
+  mkdir apache
+  tar -xzf (YOURDOWNLOADDIR)/httpd-2.0.53.tar.gz
+  cd httpd-2.0.53
+  ./configure --prefix $FIREDST/apache
+  make 
+  make install
+
+
+
+INSTALLING FIRE
+  mkdir $FIREDST/fire
+  cd $FIREDST/fire
+  tar -xvzf (YOURDOWNLOADDIR)/fire-v2.0.1.tar.gz
+
+  then get the libraries (kdtree?, interpol?, fft?) you need and put
+  them to places consistent with those you configure in the Makefile
+
+  Once you have done so, you can enter
+
+  make fire 
+ 
+  which compiles the fire binary only or
+
+  make all
+
+  which will compile the fire binary and all feature extraction tools.
+
+  This should run rather smoothly although some people report that
+  they have to tweak the code slightly if they are using a different
+  flavor of unix than linux. 
+
+
+SETTING UP THE WEB INTERFACE:
+  Copy fire.py from the cgi directory in the fire sources to fire.cgi
+  to the cgi-bin directory of your apache installation.
+
+  Copy deuteriumconfig.py from the cgi directory in the fire sources to config.py
+  in cgi-bin directory of your apache installation and change the
+  paths to the appropriate places. if your web server and your fire
+  server are the same computer (as I assume) change
+  fireServer="deuterium" to fireServer="localhost". This one is the
+  most crucial setting, all the others should not influence the
+  functionality of fire.
+
+  Copy img.py from the cgi directory in the fire sources to the
+  cgi-bin directory of your apache server
+
+  Furthermore you should copy the image files postive.png,
+  negative.png, neutral.png to places that can be accessed via the the
+  web and change config.py accordingly.
+
+  After this you should be able to access your fire web interface and
+  it should say something like "fire server not available" as you have
+  not yet started one.
+ 
+
+SETTING UP A DATABASE:
+  To set up a database for FIRE you need several things:
+
+  Let's say you have a directory database were you have some images
+  (something between 100 and 1000 should be enough for a start).
+
+  Then you have to extract features from these images. To make it easy I
+  will explain this for color histograms.
+
+  Go to the directory where you have your images (assuming all images
+  are JPEG, although fire can read lots of different formats as it uses
+  the routines from imagemagick) and call
+
+  extractcolorhistogram --color --images *.jpg
+
+  this then extracts color histograms for all your images.
+
+  then you make a filelist which you can load using fire. this has to be
+  of the following form:
+
+  ------
+  FIRE_filelist
+  path <pathtoyourimages>
+  suffix color.histo.gz
+  file image1.jpg
+  file image2.jpg
+  file
+  ...
+  ..
+  ..
+  -----
+
+  When you have done this, you can use fire to read this database:
+
+  fire -f <pathtoyourfilelist> -d 0 jsd -r 10
+
+  to start a fire loading this filelist, set distance 0 to jsd (which
+  automatically sets the weight for distance 0 to 1.0, and to make fire
+  return the 10 best matches for every query.
+
+  Having done so, you should be able to contact fire e.g. by the
+  web interface or for easier testing you can use telnet.
+
+  ---
+  # telnet localhost 12960   # to connect to fire
+
+  and you can use e.g. the command "info" to get some information about
+  the state of fire or use help to get a list of all available commands.
+
+  With "bye" you can disconnect from fire, with "quit" you can end the
+  server.
+

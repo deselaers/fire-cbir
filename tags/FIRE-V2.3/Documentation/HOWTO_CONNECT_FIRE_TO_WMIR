@@ -1,0 +1,105 @@
+                                     How to set up FIRE to use the text-feature
+                                     ------------------------------------------
+
+
+The text-feature of FIRE is used to connect FIRE to a text-retrieval system (WMIR). This is useful if you are working
+on an image corpus with text information, like Casimage. FIRE communicates to WMIR via a socket.
+
+
+Converting your XML files
+-------------------------
+The first thing you have to do in order to use your text information for retrieval is converting it into a format that
+WMIR accepts. This format is a simple XML structure, with one file per text document. The file format is as follows:
+
+[xml header]
+<document>
+[text information]
+</document>
+
+The text information part may contain XML tags, they will not disturb the operation of WMIR as they are ignored by the
+parser. The files must be valid XML. If WMIR gives you a parse error, you might try using a tool like htmltidy to clean
+them.
+
+An example would be:
+
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<document>
+<paragraph title="Name">
+cake
+</paragraph>
+<paragraph title="Description">
+This is a very delicious zucchini cake.
+</paragraph>
+</document>
+
+Configuring WMIR
+----------------
+The main configuration file of WMIR is located in the ir_engine/SOURCES directory and is called ir_control_file. You will
+only be interested in the following settings:
+
+DOC_LIST_FILE:  The path to the document list file, which is just a file that contains the list of your document XML files
+                with their complete path (one file per line).
+
+STOP_LIST_FILE: This is the file that contains words which shall be filtered out because they are too common. This is
+                language-dependent of course. Again, the format is one entry per line.
+
+TERM_VOCAB_FILE, TERM_DOC_FILE, INDEX_DOC_FILE, INVERSE_DOC_FILE, DOC_FREQ_FILE, INV_DOC_FREQ_FILE, QUERY_FILE:
+                These files are created by WMIR, so if there are no conflicts, you can just leave these settings untouched.
+                Just link ir_engine/TMP to /tmp and you will be fine.
+
+LISTEN_PORT:    The port that WMIR shall listen at for incoming connections from FIRE.
+
+Now that the control file is set up, you can do a test run by entering the SOURCES directory and typing
+
+make ir_engine
+./ir_engine
+
+If you want to use another control file, you can just pass it as an argument to ir_engine. You should see your settings
+displayed and WMIR should be stemming your documents. Depending on the corpus size, this can take some time. When it's ready,
+it should wait for incoming connections. If so, you are done with the WMIR configuration. If not, there is probably something
+wrong with the config file or your XML files.
+
+Configuring FIRE
+----------------
+If you want to use the textfeature, FIRE needs to know, which document belongs to which image, so that it can query WMIR.
+An image may only have one document assigned to it, but one document may be assigned to multiple images. To set up the
+textfeature, you first need to change the fire configuration file (or create a new one). Add a distance called "textfeature".
+This distance takes three parameters:
+- The WMIR IP
+- The WMIR port
+- The language of the files of this feature
+
+A possible string would look like this:
+
+--dist 7 textfeature:SERVER=127.0.0.1:PORT=4242:LANG=En
+
+The language argument is useful if you use more than one textfeature and attach several WMIRs to FIRE which each process
+requests for different languages. If you don't want to do that, you can enter anything as LANG.
+
+Don't for get to assign the feature a weight. Now save the configuration file and enter the FIRE filelist, that you supplied
+in the configuration file. The textfeature needs a new suffix called "textID", so add this to the suffix list. If you have
+multiple languages, call the suffices "En.textID", "Fr.textID" and so on. Make sure the suffices have the same order as the
+features in the configuration file. Save the filelist and you're done with configuration, except for the .textID files.
+These should be simple to create. The filenames are according to the FIRE feature file naming scheme, which is
+[filename.suffix]. So, if your image is called "cake.jpg", the text-feature file is called "cake.jpg.textID". This file just
+contains the filename of the text document that describes the contents of the image.
+Do not give the path, the filename is enough. WMIR can figure out the file you mean by itself. Of course, if you have
+multilple files with the same name, because your text corpus is spread over several folders, you can also supply the full
+path. Once you have created the textID files, you are ready to go.
+
+Using textretrieval
+-------------------
+Now, you can start fire and WMIR. Be sure to supply the respective configuration files you created/edited as arguments. The
+order in which you start the programs does not matter as long as you don't try to use FIRE now without WMIR running.
+In the fire webinterface, you should now see a text field in which you can enter queries. So, if you enter "cake" there, you
+should hopefully see your cake.jpg, that is, if the word cake appears in the description of the image.
+To do a multilingual query, enter a string of this form into the box: 
+
+	En:"cake" Ge:"Kuchen"
+
+By clicking on one of the randomly selected images, you start normal image-based queries, but the retrieval now also uses
+text information.
+In the settings, you can adjust the weights of the features. To see how well text-based retrieval performs, you can set all
+weights except the textfeature weight to zero and start a query.
+
+That's all, have fun with the text-supported image retrieval!

@@ -1,0 +1,148 @@
+#----------------------------------------------------------------------
+# configure additional system libraries
+# a system library is considered a library that can be installed in most
+# linux distributions over the normal package management system in contrast
+# to fire specific libraries and research libraries which are very uncommon
+# and can only be obtained from research websites and must be compiled 
+# yourself
+#----------------------------------------------------------------------
+
+#- use pthreads in server ---------------------------------------------
+PTHREAD_FLAGS=-D__USE_PTHREADS_FOR_SERVER__
+
+#-image magick---------------------------------------------------------
+# note: though it is possible to compile without you most probably do not
+# want this. This is only to allow for batch experiments using strange
+# compilers on large systems. Furthermore you definitively need a version
+# of fire using imagemagick because you need to create features and so forth
+IMAGEMAGICK_FLAGS=-DHAVE_IMAGE_MAGICK `Magick++-config --cxxflags --cppflags`
+IMAGEMAGICK_LDLIBS=`Magick++-config --libs` 
+IMAGEMAGICK_LDFLAGS=`Magick++-config --ldflags` 
+#----------------------------------------------------------------------
+
+#-lapack/atlas/blas----------------------------------------------------
+# note: you don't need this if you don't want to use PCA
+LAPACK_FLAGS=-DHAVE_LAPACK
+LAPACK_LIBS=-latlas  -llapack
+#----------------------------------------------------------------------
+
+#- SQLite -------------------------------------------------------------
+# this library can be used in image comparator for caching of distances
+# this is slower than expected and thus does not make much sense
+SQLITE_FLAGS=-DHAVE_SQLITE3
+SQLITE_LDLIBS=-lsqlite3
+#----------------------------------------------------------------------
+
+#-fft library----------------------------------------------------------
+# this library is needed for gabor feature extraction
+# if not available, the corresponding classes wont do anything useful
+#
+FFT_FLAGS=-DHAVE_FFT_LIBRARY  -DFFTW_INCLUDE='<fftw.h>'
+FFT_LIB_LDLIBS=-lfftw 
+#----------------------------------------------------------------------
+
+
+SYSTEM_LIB_FLAGS=$(PTHREAD_FLAGS) $(IMAGEMAGICK_FLAGS) $(LAPACK_FLAGS) $(SQLITE_FLAGS) $(FFT_FLAGS)
+SYSTEM_LIB_LDFLAGS=$(IMAGEMAGICK_LDFLAGS)
+SYSTEM_LIB_LDLIBS=$(IMAGEMAGICK_LDLIBS) $(LAPACK_LIBS) $(SQLITE_LDLIBS) $(FFT_LIB_LDLIBS)
+
+
+#----------------------------------------------------------------------
+# configure additional FIRE specific/research libraries
+# in the next sections, FIRE specific libraries and research libraries 
+# are configured for use with FIRE. Most of these libraries are highly 
+# optional and are not really required for normal use.
+#----------------------------------------------------------------------
+
+#-kdtree library-------------------------------------------------------
+# this library is necessary for local feature based image retrieval
+# the library used here was written by Javi Cano (jcano@iti.upv.es)
+#
+# there is an install script available for this library
+# 
+KDTREE_FLAGS=-DHAVE_KDTREE_LIBRARY
+KDTREE_LDLIBS=-lknn
+#---------------------------------------------------------------------- 
+
+#-libsvm library-------------------------------------------------------
+LIBSVM_FLAGS=-DHAVE_LIBSVM
+LIBSVM_OBJECTS=OptionalLibraries/$(ARCH)/svm.o
+# the object has to be created by hand, it is not created by this makefile
+#----------------------------------------------------------------------
+
+#-interpolation library------------------------------------------------
+# this is necessary for extraction of invariant feature histograms
+# downloaded from Philippe Thevenaz
+#
+# http://bigwww.epfl.ch/thevenaz/interpolation/interpol.tar
+# 
+# if this library is not available, bilinear interpolation with
+# wraparound is used
+INTERPOL_FLAGS=-DHAVE_INTERPOL_LIBRARY
+INTERPOL_OBJECTS=OptionalLibraries/$(ARCH)/interpol.o OptionalLibraries/$(ARCH)/coeff.o
+#---------------------------------------------------------------------- 
+
+#-RAST library---------------------------------------------------------
+# this library is needed for dist_rast which is to be used with
+# LFPositionClusterIdFeature
+# this library is developed by Thomas M Breuel at www.iupr.org
+#
+RAST_FLAGS=-DHAVE_RAST_LIBRARY
+RAST_OBJECTS=OptionalLibraries/$(ARCH)/rast.o
+#----------------------------------------------------------------------
+
+# siftpp library ------------------------------------------------------
+# this is in the fire repository
+#
+SIFT_FLAGS=-DVL_LOWE_STRICT -DVL_USEFASTMATH
+#----------------------------------------------------------------------
+
+# - SURF library ------------------------------------------------------
+# downloaded from KU Leuven/ETH Zuerich 
+# http://www.vision.ee.ethz.ch/~surf/
+# http://www.vision.ee.ethz.ch/~surf/SURF-V1.0.9.tar.gz
+
+# SURF_LDFLAGS=-Llib/i686/surf
+# SURF_LDLIBS=-lSurf
+# SURF_FLAGS=-DUSE_SURF
+#----------------------------------------------------------------------
+
+LOGLIN_FLAGS=-IOptionalLibraries/loglin
+LOGLIN_LDFLAGS=-LOptionalLibraries/loglin/lib/$(ARCH).dbg
+LOGLIN_LDLIBS=-lModels -lImage -lFileIO -lMath -lCore
+LOGLIN_MODEL_OBJ=OptionalLibraries/loglin/lib/$(ARCH).dbg/libModels.a
+
+
+.PHONY: loglinlibs
+LOGLINLIBS=loglinlibs
+ 
+$(LOGLINLIBS):
+	echo "Making libmodels"
+	$(MAKE) -C OptionalLibraries/loglin libs
+
+ 
+SPECIAL_LIBRARIES_FLAGS =  -IOptionalLibraries/include $(KDTREE_FLAGS) $(SIFT_FLAGS) $(INTERPOL_FLAGS) $(SURF_FLAGS) $(RAST_FLAGS) $(LIBSVM_FLAGS) $(LOGLIN_FLAGS)
+SPECIAL_LIBRARIES_LDFLAGS = -LOptionalLibraries/$(ARCH) $(LOGLIN_LDFLAGS)
+SPECIAL_LIBRARIES_LDLIBS = $(LIBSVM_OBJECTS) $(INTERPOL_OBJECTS) $(KDTREE_LDLIBS) $(SURF_LDLIBS) $(RAST_OBJECTS) $(LOGLIN_LDLIBS) 
+
+#----------------------------------------------------------------------
+# global configuration section
+# all variables defined above are put together
+#----------------------------------------------------------------------
+CXX=g++
+LD=g++
+INCLUDES=-ICore -IClassifiers -IClustering -IDistanceFunctions -IFeatureExtractors -IFeatures -IImage -IMisc -IRetriever -ITools
+CXXFLAGS=-Wall -I. -DDEBUG_LEVEL=10 -g $(INCLUDES) $(SYSTEM_LIB_FLAGS) $(SPECIAL_LIBRARIES_FLAGS)
+LDFLAGS=$(SYSTEM_LIB_LDFLAGS) $(LDLIBS) $(SPECIAL_LIBRARIES_LDFLAGS)
+LDLIBS=-lz -largtable2 $(SYSTEM_LIB_LDLIBS)  $(SPECIAL_LIBRARIES_LDLIBS)
+AR              = ar
+ARFLAGS         = rucs
+#MAKELIB	 = rm -f $@; $(AR) $(ARFLAGS)
+MAKELIB		= $(AR) $(ARFLAGS)
+MAKEDEPEND      = makedepend -v -D__GNUC__=3 -D__GNUC_MINOR__=3
+
+OBJDIR:=obj/$(ARCH).dbg
+BINDIR:=bin/$(ARCH).dbg
+LIBDIR:=lib/$(ARCH).dbg
+
+TEXTIR_FLAGS:=-I/usr/include/qt3 -L/usr/lib -lqt-mt -lGL -lpthread
