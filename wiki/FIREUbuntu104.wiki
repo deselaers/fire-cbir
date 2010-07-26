@@ -33,7 +33,7 @@ Now all the files should be in place for the FIRE webinterface to work
  * put a set of medium sized images (e.g. 500x500 pixels) into this directory. For a start use about 100 images.
  * convert all images into jpg (not necessary but often avoids problems) 
   * cd ~/fire-img
-  * mogrify -format jpg *
+  * mogrify -format jpg `*`
  * extract color histograms
   * ~/fire-cbir/bin/extractcolorhistograms --color --images ~/fire-img/`*`.jpg 
  * create a filelist for this dataset
