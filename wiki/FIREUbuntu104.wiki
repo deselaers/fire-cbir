@@ -1,0 +1,14 @@
+#summary Step-by-step instruction to compile FIRE on Ubuntu 10.4.
+
+= Introduction =
+
+To facilitate installation, I provide here a description how to compile the FIRE server on Ubuntu 10.4 from scratch
+
+* default Ubuntu 10.4 installation (in May 2010 in virtualbox)
+* upgrade to recent state (sudo apt-get update; sudo apt-get dist-upgrade) on July 26, 2010
+* sudo apt-get install subversion g++ libmagick++-dev
+* svn checkout http://fire-cbir.googlecode.com/svn/trunk/ fire-cbir
+* cd fire-cbir
+* make 
+
+ 
